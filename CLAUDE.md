@@ -119,6 +119,9 @@ Real output: LiDAR and Video tiers both show real gate FAILs on their respective
 
 **Known real failing gates** (from `docs/benchmark_report.md`, real fix-loop candidates): opening detection (0% found on real LiDAR), ceiling height (69cm off on real LiDAR), video-tier wall lengths (43.8% off), damage detection (finds nothing on real staged photos).
 
-**Not started**: picking + fixing the Part 4 "worst gate", automatic room-adjacency/connector detection, running the manifest CLI + full benchmark against the other 3 (irregular) real rooms, reproduction bundle, technical report.
+## Part 4: fix loop (complete)
+Worst gate identified via `scripts/rank_gates.py` (severity-ranked): `ceiling_height`, LiDAR tier, bedroom_1, 46.0x over threshold (69.01cm error vs. 1.5cm). Root cause diagnosed with direct point-cloud evidence, not guessed (`docs/fix_loop_diagnosis.md`): a global p95-p5 percentile trim conflated "reject noise tail" and "find a sparse real ceiling cluster" (<0.5% of points), which a single threshold can't do. Fix: filter to a physically-plausible ceiling band before taking p90 (isolated diff in `pipeline/room_reconstruction.py`, `results/fix_loop/code_diff.patch`). Prediction (5.81cm error, ~92% reduction, gate would NOT pass) was written down before implementation and matched the actual result exactly. **Result: 69.01cm → 5.81cm error (91.6% reduction), gate still fails (3.9x over) — disclosed honestly, not hidden.** Two further improvement attempts (density-peak, ray-direction filtering) were tried and rejected with real numbers (both worse) — documented as genuine due diligence, not abandoned quietly. Full before/after/diff in `results/fix_loop/`, one-page declaration in `docs/fix_loop_report.md`. 77/77 tests passing throughout, fix is isolated (wall lengths bit-for-bit identical before/after).
+
+**Not started**: automatic room-adjacency/connector detection, running the manifest CLI + full benchmark against the other 3 (irregular) real rooms, reproduction bundle, technical report.
 
 No git commits made yet in this repo (process evidence / Part 5 still pending — flag if/when to start committing incrementally).

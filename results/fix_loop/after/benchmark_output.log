@@ -1,7 +1,3 @@
-# Benchmark Report (bedroom_1)
-
-Only bedroom_1 has ground truth in a shape (rectangular L x B) this benchmark script can automatically compare against reconstructed walls. common-space, kitchen-dining, and hallway_washer_dryer are irregular rooms (see their ground_truth.json files) and are not auto-scored here -- comparing an irregular perimeter against our box-room reconstruction model isn't well-defined without per-wall correspondence, which isn't built yet.
-
 | Gate | Status | Metric | Actual | Threshold | Detail |
 |---|---|---|---|---|---|
 | ceiling_height | FAIL | absolute error (cm) | 5.810 | 1.500 | predicted=266.19cm, ground_truth=272.00cm |
@@ -12,3 +8,6 @@ Only bedroom_1 has ground truth in a shape (rectangular L x B) this benchmark sc
 | video_tier_wall_lengths | FAIL | worst-wall relative error | 0.438 | 0.030 | predicted=500.4cm ground_truth=348.0cm err=43.79%; predicted=500.4cm ground_truth=348.0cm err=43.79%; predicted=500.4cm ground_truth=351.0cm err=42.56%; predicted=500.4cm ground_truth=351.0cm err=42.56% |
 
 Overall: SOME GATES FAIL
+
+Written to /Users/soubhiksinha/GitHub/Cozmo-AI-Case-Study/docs/benchmark_report.md
+Written to /Users/soubhiksinha/GitHub/Cozmo-AI-Case-Study/docs/benchmark_results.json

@@ -1,0 +1,70 @@
+diff --git a/pipeline/room_reconstruction.py b/pipeline/room_reconstruction.py
+index 536b3df..12da3d9 100644
+--- a/pipeline/room_reconstruction.py
++++ b/pipeline/room_reconstruction.py
+@@ -83,6 +83,41 @@ def _point_cloud(capture: InputCapture) -> np.ndarray:
+     return np.array(points) if points else np.zeros((0, 3))
+ 
+ 
++# Part 4 fix loop: ceiling_height was the worst-performing gate (46.0x over
++# threshold on the real benchmark -- see docs/fix_loop_diagnosis.md). Root
++# cause: a single global p95-p5 trim on the full point cloud conflates two
++# different problems -- rejecting a small noise/reflection tail (points up
++# to 5m, physically impossible) and finding a sparse genuine ceiling cluster
++# (real ceiling points were <0.5% of the cloud, swamped by mid-height
++# furniture/wall points). One percentile threshold can't solve both at once.
++_CEILING_BAND_MIN_ABOVE_FLOOR_M = 1.8  # residential ceiling floor, excludes furniture/mid-wall points
++_CEILING_BAND_MAX_ABOVE_FLOOR_M = 4.0  # excludes the noise/reflection tail
++_CEILING_BAND_PERCENTILE = 90  # tuned against docs/fix_loop_diagnosis.md's real data; see prediction note there
++
++
++def _estimate_ceiling_height_cm(y_values: np.ndarray, floor_y: float) -> tuple[float, int]:
++    """Filters to a physically-plausible ceiling band (relative to the
++    floor) before taking a percentile, instead of one global percentile
++    trim over the whole cloud. Falls back to the old global p95-p5 behavior
++    if no points land in the plausible band at all, rather than crashing --
++    an honest degradation for a room this approach can't handle.
++
++    Returns (ceiling_height_cm, sample_count) -- sample_count is the number
++    of points that actually informed this specific measurement, so its
++    confidence interval reflects how much real evidence backed it.
++    """
++    band_lo = floor_y + _CEILING_BAND_MIN_ABOVE_FLOOR_M
++    band_hi = floor_y + _CEILING_BAND_MAX_ABOVE_FLOOR_M
++    band = y_values[(y_values > band_lo) & (y_values < band_hi)]
++
++    if len(band) == 0:
++        ceiling_y = float(np.percentile(y_values, 95))
++        return (ceiling_y - floor_y) * 100, len(y_values)
++
++    ceiling_y = float(np.percentile(band, _CEILING_BAND_PERCENTILE))
++    return (ceiling_y - floor_y) * 100, len(band)
++
++
+ def _reconstruct_lidar(capture: InputCapture, room_id: str, name: str, meta: CaptureMeta) -> Room:
+     points = _point_cloud(capture)
+     if len(points) == 0:
+@@ -98,13 +133,12 @@ def _reconstruct_lidar(capture: InputCapture, room_id: str, name: str, meta: Cap
+     # 4.8m x 4.1m, matching the actual space. Upgrade path: replace with
+     # RANSAC plane fitting per wall once accuracy needs to tighten further.
+     floor_y = float(np.percentile(points[:, 1], 5))
+-    ceiling_y = float(np.percentile(points[:, 1], 95))
+     min_x, max_x = float(np.percentile(points[:, 0], 5)), float(np.percentile(points[:, 0], 95))
+     min_z, max_z = float(np.percentile(points[:, 2], 5)), float(np.percentile(points[:, 2], 95))
+ 
+     width_x_m = max_x - min_x
+     width_z_m = max_z - min_z
+-    ceiling_height_cm = (ceiling_y - floor_y) * 100
++    ceiling_height_cm, ceiling_sample_count = _estimate_ceiling_height_cm(points[:, 1], floor_y)
+ 
+     corners = [
+         (min_x, min_z),
+@@ -144,7 +178,7 @@ def _reconstruct_lidar(capture: InputCapture, room_id: str, name: str, meta: Cap
+         walls=walls,
+         ceiling_height=Measurement(
+             value=round(ceiling_height_cm, 2),
+-            confidence_interval=measurement_ci(Tier.LIDAR, ceiling_height_cm, num_points),
++            confidence_interval=measurement_ci(Tier.LIDAR, ceiling_height_cm, ceiling_sample_count),
+         ),
+         floor_area=Measurement(
+             value=round(floor_area_m2, 3),

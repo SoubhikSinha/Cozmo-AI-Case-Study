@@ -1,0 +1,11 @@
+{
+  "tier": "lidar",
+  "device": "iPhone17,1",
+  "room_id": "bedroom_1",
+  "gate_name": "ceiling_height",
+  "passed": false,
+  "metric_description": "absolute error (cm)",
+  "actual_value": 69.00999999999999,
+  "threshold": 1.5,
+  "detail": "predicted=202.99cm, ground_truth=272.00cm"
+}

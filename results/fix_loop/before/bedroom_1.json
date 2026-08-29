@@ -1,0 +1,297 @@
+{
+  "property_id": "bedroom_1",
+  "rooms": [
+    {
+      "id": "bedroom_1",
+      "name": "bedroom_1",
+      "capture": {
+        "tier": "lidar",
+        "device": "unknown",
+        "room_id": "bedroom_1"
+      },
+      "walls": [
+        {
+          "id": "wall-0",
+          "start": [
+            -2.2797670031132595,
+            -1.725343109554781
+          ],
+          "end": [
+            2.1953934821920105,
+            -1.725343109554781
+          ],
+          "length": {
+            "value": 447.52,
+            "confidence_interval": [
+              446.397,
+              448.635
+            ],
+            "unit": "cm"
+          }
+        },
+        {
+          "id": "wall-1",
+          "start": [
+            2.1953934821920105,
+            -1.725343109554781
+          ],
+          "end": [
+            2.1953934821920105,
+            1.391373974315632
+          ],
+          "length": {
+            "value": 311.67,
+            "confidence_interval": [
+              310.893,
+              312.451
+            ],
+            "unit": "cm"
+          }
+        },
+        {
+          "id": "wall-2",
+          "start": [
+            2.1953934821920105,
+            1.391373974315632
+          ],
+          "end": [
+            -2.2797670031132595,
+            1.391373974315632
+          ],
+          "length": {
+            "value": 447.52,
+            "confidence_interval": [
+              446.397,
+              448.635
+            ],
+            "unit": "cm"
+          }
+        },
+        {
+          "id": "wall-3",
+          "start": [
+            -2.2797670031132595,
+            1.391373974315632
+          ],
+          "end": [
+            -2.2797670031132595,
+            -1.725343109554781
+          ],
+          "length": {
+            "value": 311.67,
+            "confidence_interval": [
+              310.893,
+              312.451
+            ],
+            "unit": "cm"
+          }
+        }
+      ],
+      "ceiling_height": {
+        "value": 202.99,
+        "confidence_interval": [
+          202.486,
+          203.501
+        ],
+        "unit": "cm"
+      },
+      "floor_area": {
+        "value": 13.948,
+        "confidence_interval": [
+          13.913,
+          13.983
+        ],
+        "unit": "m2"
+      },
+      "openings": [],
+      "damage_regions": [
+        {
+          "id": "damage-163-mold-5983",
+          "surface_id": "wall-3",
+          "damage_class": "mold",
+          "severity": "severe",
+          "extent_area": {
+            "value": 2250.0,
+            "confidence_interval": [
+              1800.026,
+              2700.038
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-151-structural-18",
+          "surface_id": "wall-3",
+          "damage_class": "structural",
+          "severity": "minor",
+          "extent_area": {
+            "value": 110.2,
+            "confidence_interval": [
+              88.167,
+              132.251
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-1177-water-1030",
+          "surface_id": "wall-3",
+          "damage_class": "water",
+          "severity": "severe",
+          "extent_area": {
+            "value": 6112.0,
+            "confidence_interval": [
+              4889.574,
+              7334.36
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-866-water-1414",
+          "surface_id": "wall-2",
+          "damage_class": "water",
+          "severity": "severe",
+          "extent_area": {
+            "value": 5864.7,
+            "confidence_interval": [
+              4691.729,
+              7037.594
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-465-structural-805",
+          "surface_id": "wall-2",
+          "damage_class": "structural",
+          "severity": "minor",
+          "extent_area": {
+            "value": 21.4,
+            "confidence_interval": [
+              11.44,
+              31.44
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-805-water-160",
+          "surface_id": "wall-1",
+          "damage_class": "water",
+          "severity": "severe",
+          "extent_area": {
+            "value": 6974.5,
+            "confidence_interval": [
+              5579.572,
+              8369.359
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-780-mold-268",
+          "surface_id": "wall-1",
+          "damage_class": "mold",
+          "severity": "minor",
+          "extent_area": {
+            "value": 56.2,
+            "confidence_interval": [
+              44.924,
+              67.386
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-1326-water-1280",
+          "surface_id": "wall-0",
+          "damage_class": "water",
+          "severity": "severe",
+          "extent_area": {
+            "value": 5296.6,
+            "confidence_interval": [
+              4237.287,
+              6355.931
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-1274-mold-8",
+          "surface_id": "wall-0",
+          "damage_class": "mold",
+          "severity": "minor",
+          "extent_area": {
+            "value": 111.4,
+            "confidence_interval": [
+              89.123,
+              133.684
+            ],
+            "unit": "cm2"
+          }
+        }
+      ],
+      "concealed_flags": [
+        {
+          "id": "flag-mold_indicates_hidden_moisture",
+          "rule_name": "mold_indicates_hidden_moisture",
+          "rule_description": "IF a mold region > 300cm^2 exists THEN flag a likely hidden/ongoing moisture source",
+          "triggered_by_region_ids": [
+            "damage-163-mold-5983"
+          ],
+          "predicted_issue": "likely hidden or ongoing moisture source feeding the mold growth",
+          "confidence": 0.6
+        }
+      ],
+      "scope_items": [
+        {
+          "id": "scope-damage-163-mold-5983",
+          "damage_region_id": "damage-163-mold-5983",
+          "description": "Remediate mold growth and treat affected surface on wall-3 (severe severity, 2250 cm2)"
+        },
+        {
+          "id": "scope-damage-151-structural-18",
+          "damage_region_id": "damage-151-structural-18",
+          "description": "Inspect and repair structural crack on wall-3 (minor severity, 110 cm2)"
+        },
+        {
+          "id": "scope-damage-1177-water-1030",
+          "damage_region_id": "damage-1177-water-1030",
+          "description": "Remove and dry affected material; treat for water damage on wall-3 (severe severity, 6112 cm2)"
+        },
+        {
+          "id": "scope-damage-866-water-1414",
+          "damage_region_id": "damage-866-water-1414",
+          "description": "Remove and dry affected material; treat for water damage on wall-2 (severe severity, 5865 cm2)"
+        },
+        {
+          "id": "scope-damage-465-structural-805",
+          "damage_region_id": "damage-465-structural-805",
+          "description": "Inspect and repair structural crack on wall-2 (minor severity, 21 cm2)"
+        },
+        {
+          "id": "scope-damage-805-water-160",
+          "damage_region_id": "damage-805-water-160",
+          "description": "Remove and dry affected material; treat for water damage on wall-1 (severe severity, 6974 cm2)"
+        },
+        {
+          "id": "scope-damage-780-mold-268",
+          "damage_region_id": "damage-780-mold-268",
+          "description": "Remediate mold growth and treat affected surface on wall-1 (minor severity, 56 cm2)"
+        },
+        {
+          "id": "scope-damage-1326-water-1280",
+          "damage_region_id": "damage-1326-water-1280",
+          "description": "Remove and dry affected material; treat for water damage on wall-0 (severe severity, 5297 cm2)"
+        },
+        {
+          "id": "scope-damage-1274-mold-8",
+          "damage_region_id": "damage-1274-mold-8",
+          "description": "Remediate mold growth and treat affected surface on wall-0 (minor severity, 111 cm2)"
+        }
+      ]
+    }
+  ],
+  "adjacency": []
+}
