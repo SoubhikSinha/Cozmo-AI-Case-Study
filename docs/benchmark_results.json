@@ -1,0 +1,68 @@
+[
+  {
+    "tier": "lidar",
+    "device": "iPhone17,1",
+    "room_id": "bedroom_1",
+    "gate_name": "ceiling_height",
+    "passed": false,
+    "metric_description": "absolute error (cm)",
+    "actual_value": 69.00999999999999,
+    "threshold": 1.5,
+    "detail": "predicted=202.99cm, ground_truth=272.00cm"
+  },
+  {
+    "tier": "lidar",
+    "device": "iPhone17,1",
+    "room_id": "bedroom_1",
+    "gate_name": "opening_widths",
+    "passed": false,
+    "metric_description": "fraction within 2.0cm",
+    "actual_value": 0.0,
+    "threshold": 0.85,
+    "detail": "miss (predicted=None, ground_truth=99); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=150)"
+  },
+  {
+    "tier": "photo",
+    "device": "iPhone17,1",
+    "room_id": "bedroom_1",
+    "gate_name": "ceiling_repeatability",
+    "passed": true,
+    "metric_description": "spread across captures (cm)",
+    "actual_value": 0.0,
+    "threshold": 1.0,
+    "detail": "capture_a=240.00cm, capture_b=240.00cm [CAVEAT: photo tier's ceiling height is a fixed default, not measured -- this comparison is vacuous]"
+  },
+  {
+    "tier": "photo",
+    "device": "iPhone17,1",
+    "room_id": "bedroom_1",
+    "gate_name": "repeatability_walls",
+    "passed": true,
+    "metric_description": "worst-wall ratio to threshold (<=1.0 passes)",
+    "actual_value": 0.0,
+    "threshold": 1.0,
+    "detail": "ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%) [CAVEAT: photo tier's wall lengths are a fixed default, not measured -- this comparison is vacuous]"
+  },
+  {
+    "tier": "photo",
+    "device": "iPhone17,1",
+    "room_id": "bedroom_1",
+    "gate_name": "photo_tier_footprint",
+    "passed": true,
+    "metric_description": "relative footprint error",
+    "actual_value": 0.003276003276003206,
+    "threshold": 0.08,
+    "detail": "predicted=12.25m2, ground_truth=12.21m2 [CAVEAT: this is bedroom_1's single-room footprint, a proxy -- the real gate is the whole-property stitched footprint, not yet run against real multi-room captures]"
+  },
+  {
+    "tier": "video",
+    "device": "iPhone17,1",
+    "room_id": "bedroom_1",
+    "gate_name": "video_tier_wall_lengths",
+    "passed": false,
+    "metric_description": "worst-wall relative error",
+    "actual_value": 0.437923422394763,
+    "threshold": 0.03,
+    "detail": "predicted=500.4cm ground_truth=348.0cm err=43.79%; predicted=500.4cm ground_truth=348.0cm err=43.79%; predicted=500.4cm ground_truth=351.0cm err=42.56%; predicted=500.4cm ground_truth=351.0cm err=42.56%"
+  }
+]

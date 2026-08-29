@@ -1,0 +1,52 @@
+{
+  "room_id": "bedroom_1",
+  "measured_with": "laser measurer / tape",
+  "measured_by": "user",
+  "floor_dimensions_cm": {
+    "length": 351,
+    "breadth": 348
+  },
+  "floor_area_m2": 12.21,
+  "ceiling_height_cm": 272,
+  "openings": [
+    {
+      "name": "room_entrance_door",
+      "wall": "entrance_wall",
+      "height_cm": 211,
+      "width_cm": 99
+    },
+    {
+      "name": "washroom_door",
+      "wall": "entrance_wall",
+      "note": "same wall as room entrance door, adjacent to it",
+      "height_cm": 202,
+      "width_cm": 60
+    },
+    {
+      "name": "closet_door",
+      "wall": "wall_adjacent_to_entrance_wall",
+      "height_cm": 202,
+      "width_cm": 60
+    },
+    {
+      "name": "window",
+      "wall": "wall_opposite_entrance_wall",
+      "height_cm": 180,
+      "width_cm": 150
+    }
+  ],
+  "staged_damage": [
+    {
+      "class": "structural",
+      "description": "cracked wall"
+    },
+    {
+      "class": "water",
+      "description": "water stain"
+    }
+  ],
+  "repeatability_gate": {
+    "tier": "photo",
+    "recapture_folder": "media/photos/bedroom_1_recapture"
+  }
+}

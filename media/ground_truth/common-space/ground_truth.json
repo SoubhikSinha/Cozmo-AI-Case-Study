@@ -1,0 +1,66 @@
+{
+  "room_id": "common-space",
+  "alias": "Drawing Space",
+  "measured_with": "laser measurer / tape",
+  "measured_by": "user",
+  "note": "Irregular room, slanted ceiling, not a box. Walls listed in physical perimeter order (clockwise), not as an L x B footprint.",
+  "ceiling_height_cm": {
+    "note": "ceiling is slanted, not flat",
+    "highest": 363,
+    "lowest": 290
+  },
+  "perimeter_measurement_order": "clockwise",
+  "perimeter": [
+    {
+      "segment": "opening_from_hallway",
+      "type": "opening",
+      "note": "wide opening, no door, connects to hallway_washer_dryer",
+      "width_cm": 124
+    },
+    {
+      "segment": "wall_1",
+      "type": "wall",
+      "note": "wall behind couch",
+      "length_cm": 114
+    },
+    {
+      "segment": "wall_2",
+      "type": "wall",
+      "note": "small space at 90 degrees to couch",
+      "length_cm": 130
+    },
+    {
+      "segment": "sliding_balcony_door",
+      "type": "opening",
+      "width_cm": 220,
+      "height_cm": 290
+    },
+    {
+      "segment": "wall_3",
+      "type": "wall",
+      "note": "wall behind TV",
+      "length_cm": 260
+    },
+    {
+      "segment": "passage_to_kitchen_island",
+      "type": "opening",
+      "note": "small gap/passage between wall_3 and the kitchen island",
+      "width_cm": 101
+    },
+    {
+      "segment": "wall_4",
+      "type": "wall",
+      "length_cm": 203,
+      "features": [
+        {"name": "kitchen_shelf_opening", "type": "opening", "width_cm": 135}
+      ]
+    }
+  ],
+  "connectors": [
+    {
+      "to_room": "hallway_washer_dryer",
+      "via": "opening_from_hallway",
+      "width_cm": 124
+    }
+  ]
+}

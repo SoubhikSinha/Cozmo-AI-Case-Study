@@ -1,0 +1,61 @@
+{
+  "room_id": "kitchen-dining",
+  "measured_with": "laser measurer / tape",
+  "measured_by": "user",
+  "note": "Combined kitchen + dining space. Kitchen perimeter measured anti-clockwise, not a box; dining area is a simple box.",
+  "ceiling_height_cm": {
+    "note": "same slanted ceiling as common-space (Drawing Space), shared/continuous space",
+    "highest": 363,
+    "lowest": 290
+  },
+  "kitchen": {
+    "perimeter_measurement_order": "anti-clockwise",
+    "perimeter": [
+      {
+        "segment": "wall_1",
+        "type": "wall",
+        "note": "wall + shelf depth",
+        "length_cm": 173,
+        "features": [
+          {
+            "name": "shelf",
+            "type": "fixture",
+            "width_cm": 101,
+            "length_cm": 236,
+            "note": "3 shelves / 4 blocks, top to bottom",
+            "vertical_gaps_cm": [38, 56, 56, 64]
+          }
+        ]
+      },
+      {
+        "segment": "wall_2",
+        "type": "wall",
+        "note": "kitchen sink, cabinets",
+        "length_cm": 151
+      },
+      {
+        "segment": "wall_3",
+        "type": "wall",
+        "note": "stove/oven, chimney, microwave, cabinet",
+        "length_cm": 281
+      }
+    ],
+    "fixtures": [
+      {"name": "island", "width_cm": 77, "depth_cm": 28}
+    ]
+  },
+  "dining": {
+    "floor_dimensions_cm": {
+      "length": 361,
+      "breadth": 239
+    },
+    "openings": [
+      {
+        "name": "window",
+        "note": "same dimensions as bedroom_1 window",
+        "height_cm": 180,
+        "width_cm": 150
+      }
+    ]
+  }
+}

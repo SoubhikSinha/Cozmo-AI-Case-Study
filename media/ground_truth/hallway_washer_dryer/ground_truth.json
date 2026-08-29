@@ -1,0 +1,80 @@
+{
+  "room_id": "hallway_washer_dryer",
+  "measured_with": "laser measurer / tape",
+  "measured_by": "user",
+  "note": "Irregular multi-part space, not a box: a hallway (measured anti-clockwise around its perimeter) with a washer/dryer alcove and a wide opening to common-space (the connector room). Walls are listed in physical perimeter order, not as an L x B footprint.",
+  "ceiling_height_cm": 236,
+  "hallway": {
+    "perimeter_measurement_order": "anti-clockwise",
+    "perimeter": [
+      {
+        "segment": "room_entrance_door",
+        "type": "opening",
+        "height_cm": 211,
+        "width_cm": 99
+      },
+      {
+        "segment": "wall_1",
+        "type": "wall",
+        "length_cm": 240,
+        "features": [
+          {"name": "washroom_door", "type": "opening", "note": "accessed from outside the hallway", "height_cm": 202, "width_cm": 60},
+          {"name": "gap", "type": "blank_wall_segment", "length_cm": 120},
+          {"name": "mini_closet_door", "type": "opening", "height_cm": 202, "width_cm": 60}
+        ]
+      },
+      {
+        "segment": "wall_2",
+        "type": "wall",
+        "note": "at an angle relative to wall_1",
+        "length_cm": 115,
+        "features": [
+          {
+            "name": "shelf",
+            "type": "fixture",
+            "width_cm": 58,
+            "note": "5 blocks / 4 shelves, vertical gaps top to bottom",
+            "vertical_gaps_cm": [35, 35, 35, 35, 69]
+          }
+        ]
+      },
+      {
+        "segment": "wall_3",
+        "type": "wall",
+        "length_cm": 105,
+        "features": [
+          {"name": "shoe_rack", "type": "fixture"}
+        ]
+      },
+      {
+        "segment": "opening_to_common_space",
+        "type": "opening",
+        "note": "wide opening, no door, connects hallway to common-space",
+        "width_cm": 124
+      },
+      {
+        "segment": "wall_4",
+        "type": "wall",
+        "note": "thermostat wall",
+        "length_cm": 114
+      }
+    ]
+  },
+  "washer_dryer_room": {
+    "note": "small alcove off the hallway",
+    "floor_dimensions_cm": {
+      "length": 168,
+      "breadth": 162
+    },
+    "openings": [
+      {"name": "door", "height_cm": 202, "width_cm": 90}
+    ]
+  },
+  "connectors": [
+    {
+      "to_room": "common-space",
+      "via": "opening_to_common_space",
+      "width_cm": 124
+    }
+  ]
+}

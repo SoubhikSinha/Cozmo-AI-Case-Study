@@ -13,4 +13,6 @@ media/lidar/*
 !media/lidar/.gitkeep
 media/ground_truth/*
 !media/ground_truth/.gitkeep
+!media/ground_truth/**/
+!media/ground_truth/**/*.json
 media/sort_log.txt
