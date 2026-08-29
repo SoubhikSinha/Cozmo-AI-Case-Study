@@ -4,7 +4,7 @@
 
 ## 1. Install (one-time, before visiting the property)
 1. **Camera** — already on the phone. No setup.
-2. **3D Scanner App** by AI Photo Editor Lab SRL. Free tier is sufficient. Open it once and grant Camera access when prompted.
+2. **3D Scanner App** by AI Photo Editor Lab SRL, version **2.5**. Free tier is sufficient. Open it once and grant Camera access when prompted.
 
 ## 2. Per-room capture order
 Capture **one room at a time, fully, before moving to the next.** For each room, in this order:

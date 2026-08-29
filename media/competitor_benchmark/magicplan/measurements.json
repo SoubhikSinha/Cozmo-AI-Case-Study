@@ -1,0 +1,26 @@
+{
+  "source_pdf": "media/competitor_benchmark/magicplan/Bedroom + Drawing Space Report.pdf",
+  "app": "magicplan",
+  "app_version": "2026.34.1",
+  "note": "Values transcribed by hand from the PDF's text/labels (feet-inches, fractional). Opening (door/window) widths are not confidently extractable from this export's flattened text layout -- the PDF shows wall-segment dimension strings near each opening, but which segment is a door vs. a wall run isn't unambiguous from text alone without re-inspecting the rendered image per opening. Left empty rather than guessed.",
+  "rooms": {
+    "bedroom_1": {
+      "source_room_name": "Bedroom",
+      "width": "11' 9 1/2\"",
+      "length": "11' 7\"",
+      "ceiling_height": "9' 1 1/4\"",
+      "area_sqft": 136.59,
+      "perimeter": "46' 9\"",
+      "openings": []
+    },
+    "common-space": {
+      "source_room_name": "Living Room",
+      "width": "11' 6 1/2\"",
+      "length": "9' 1 1/2\"",
+      "ceiling_height": "11' 3 1/2\"",
+      "area_sqft": 99.23,
+      "perimeter": "40' 4\"",
+      "openings": []
+    }
+  }
+}

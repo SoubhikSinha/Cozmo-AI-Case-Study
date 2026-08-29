@@ -94,6 +94,64 @@ def test_detect_damage_finds_staged_crack(tmp_path):
     assert len(structural_regions) >= 1
 
 
+def _noisy_room_image(seed: int) -> np.ndarray:
+    """Textured, high-frequency image -- stands in for a real photo's
+    fine detail/JPEG noise, which previously made Canny+aspect-ratio
+    cracks explode into thousands of false positives on real captures."""
+    rng = np.random.default_rng(seed)
+    return rng.integers(0, 255, size=(*IMG_SIZE, 3), dtype=np.uint8)
+
+
+def test_detect_damage_stays_bounded_on_noisy_real_scale_images(tmp_path):
+    """Regression test: on a real ~1800-frame LiDAR capture, unbounded
+    per-frame detection produced 54,609 "damage regions" from ordinary
+    photo texture (see CLAUDE.md). Simulates the same failure mode with
+    several noisy frames and asserts the dedup keeps output small."""
+    frames = []
+    for i in range(8):
+        image_path = tmp_path / f"noisy_{i}.jpg"
+        cv2.imwrite(str(image_path), _noisy_room_image(seed=i))
+        frames.append(Frame(image_path=image_path))
+
+    capture = Capture(tier=Tier.PHOTO, room_id="r1", frames=frames)
+    room = _simple_box_room()
+
+    regions = detect_damage(room, capture)
+
+    # bounded by (number of frame-fallback surfaces) x (damage classes),
+    # never by frame count or raw noisy-contour count
+    assert len(regions) < 20
+
+
+def test_detect_damage_dedupes_repeated_detections_to_one_per_surface_class(tmp_path):
+    """The same physical stain photographed from multiple frames aimed at
+    the same wall should collapse to a single region, not one per frame.
+    Uses LiDAR tier + a shared pose so surface attribution is consistent
+    across frames (Photo/Video have no pose, so cross-frame surface
+    attribution -- and therefore this dedup -- isn't possible there; a
+    documented, separate limitation)."""
+    from pipeline.core.types import Pose
+
+    # camera forward = (0, 0, -1), which matches wall-0's outward normal
+    # in _simple_box_room's coordinate convention
+    pose = Pose(matrix=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+
+    frames = []
+    for i in range(5):
+        image_path = tmp_path / f"img_{i}.jpg"
+        cv2.imwrite(str(image_path), _draw_water_stain(_blank_room_image()))
+        frames.append(Frame(image_path=image_path, pose=pose))
+
+    capture = Capture(tier=Tier.LIDAR, room_id="r1", frames=frames)
+    room = _simple_box_room()
+
+    regions = detect_damage(room, capture)
+    water_regions = [r for r in regions if r.damage_class == DamageClass.WATER]
+
+    assert len(water_regions) == 1
+    assert water_regions[0].surface_id == "wall-0"
+
+
 def test_detect_damage_finds_nothing_on_clean_room(tmp_path):
     image_path = tmp_path / "img_0.jpg"
     cv2.imwrite(str(image_path), _blank_room_image())

@@ -12,13 +12,22 @@ from pipeline.schema import DamageRegion, Measurement, Room
 # run against DAMAGE_CLASS_DESCRIPTIONS) is future work once that model is
 # picked. These are a documented starting point: real enough to test
 # rule-firing logic against staged mock imagery, not calibrated against
-# real photos yet. Upgrade path: swap _detect_color_stains/_detect_cracks
-# for a model call; detect_damage's signature and DamageRegion output stay
-# the same either way.
+# real photos yet -- color thresholds still confuse wood furniture/skin
+# tones with water stains, and the assessment's own framing acknowledges
+# this is a hard problem the whole field struggled with. Upgrade path:
+# swap _detect_color_stains/_detect_cracks for a model call; detect_damage's
+# signature and DamageRegion output stay the same either way.
+#
+# ponytail: thresholds below are relative to image area/dimensions, not
+# fixed pixel counts -- verified against a real ~1800-frame LiDAR capture,
+# where fixed-pixel thresholds (150px stain, 40px crack on a 1920x1440
+# image) let through 200+ false positives per frame (54,609 total on one
+# room) because ordinary photo texture and JPEG noise trivially clear a
+# small fixed pixel count on a multi-megapixel image.
 
-_MIN_STAIN_AREA_PX = 150
-_MIN_CRACK_AREA_PX = 40
-_CRACK_MIN_ASPECT_RATIO = 4.0
+_MIN_STAIN_AREA_FRACTION = 0.01  # 1% of the frame's pixel area
+_MIN_CRACK_AREA_FRACTION = 0.001
+_CRACK_MIN_ASPECT_RATIO = 8.0
 _ASSUMED_PHOTO_FRAME_WIDTH_M = 2.5  # no depth on photo/video tiers -- rough scale only
 
 _STAIN_HSV_RANGES: dict[DamageClass, tuple[tuple[int, int, int], tuple[int, int, int]]] = {
@@ -28,7 +37,16 @@ _STAIN_HSV_RANGES: dict[DamageClass, tuple[tuple[int, int, int], tuple[int, int,
 
 
 def detect_damage(room: Room, capture: Capture) -> list[DamageRegion]:
-    regions: list[DamageRegion] = []
+    """Runs per-frame stain/crack detection, then deduplicates to at most
+    one region per (surface, damage_class): the same physical damage shows
+    up in many frames as the camera passes it, so keeping every frame's hit
+    would report the same spot dozens of times. Keeping only the
+    largest-area hit per surface+class also bounds total output to a small,
+    explainable number regardless of how noisy any single frame is --
+    "confident garbage on thin input caps your score," so fewer, stronger
+    candidates beats a flood of duplicates."""
+    best_by_key: dict[tuple[str, DamageClass], DamageRegion] = {}
+
     for index, frame in enumerate(capture.frames):
         import cv2
 
@@ -40,10 +58,16 @@ def detect_damage(room: Room, capture: Capture) -> list[DamageRegion]:
         scale = _area_scale_cm2_per_px(frame, capture.tier, image.shape)
 
         region_id_prefix = f"damage-{index}"
-        regions.extend(_detect_color_stains(image, surface_id, region_id_prefix, scale))
-        regions.extend(_detect_cracks(image, surface_id, region_id_prefix, scale))
+        candidates = _detect_color_stains(image, surface_id, region_id_prefix, scale) + _detect_cracks(
+            image, surface_id, region_id_prefix, scale
+        )
+        for region in candidates:
+            key = (region.surface_id, region.damage_class)
+            current_best = best_by_key.get(key)
+            if current_best is None or region.extent_area.value > current_best.extent_area.value:
+                best_by_key[key] = region
 
-    return regions
+    return list(best_by_key.values())
 
 
 def _surface_for_frame(room: Room, frame: Frame, tier: Tier) -> str | None:
@@ -120,13 +144,16 @@ def _pixel_area_to_cm2(mask: np.ndarray, scale) -> float:
 def _detect_color_stains(image, surface_id: str, id_prefix: str, scale) -> list[DamageRegion]:
     import cv2
 
+    image_area = image.shape[0] * image.shape[1]
+    min_area_px = image_area * _MIN_STAIN_AREA_FRACTION
+
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     regions = []
     for damage_class, (lo, hi) in _STAIN_HSV_RANGES.items():
         mask = cv2.inRange(hsv, np.array(lo), np.array(hi))
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         for i, contour in enumerate(contours):
-            if cv2.contourArea(contour) < _MIN_STAIN_AREA_PX:
+            if cv2.contourArea(contour) < min_area_px:
                 continue
             blob_mask = np.zeros(mask.shape, dtype=np.uint8)
             cv2.drawContours(blob_mask, [contour], -1, 255, thickness=cv2.FILLED)
@@ -140,14 +167,18 @@ def _detect_color_stains(image, surface_id: str, id_prefix: str, scale) -> list[
 def _detect_cracks(image, surface_id: str, id_prefix: str, scale) -> list[DamageRegion]:
     import cv2
 
+    image_area = image.shape[0] * image.shape[1]
+    min_area_px = image_area * _MIN_CRACK_AREA_FRACTION
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150)
+    blurred = cv2.GaussianBlur(gray, (7, 7), 0)  # suppresses fine texture/JPEG noise before edge detection
+    edges = cv2.Canny(blurred, 100, 200)
     contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
     regions = []
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
-        if area < _MIN_CRACK_AREA_PX:
+        if area < min_area_px:
             continue
         _, (w, h), _ = cv2.minAreaRect(contour)
         short, long_ = sorted([max(w, 1e-6), max(h, 1e-6)])
