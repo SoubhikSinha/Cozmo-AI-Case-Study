@@ -83,6 +83,43 @@ def test_lidar_reconstruction_estimates_box_room_dimensions(tmp_path):
     assert 8.0 <= room.floor_area.value <= 25.0  # roughly 4m x 4m
 
 
+def _make_two_door_frame(tmp_path, index: int) -> Frame:
+    """North wall with two separate doorways (columns 2-8 and 25-39,
+    separated by a wide gap of flat wall) -- exercises the run-splitting fix
+    that lets one wall report more than one opening."""
+    depth = np.full((IMG_H, IMG_W), WALL_DISTANCE_M, dtype=np.float64)
+    depth[DOOR_ROW, 2:9] = WALL_DISTANCE_M * 2.0
+    depth[DOOR_ROW, DOOR_COLS[0] : DOOR_COLS[1] + 1] = WALL_DISTANCE_M * 2.5
+
+    depth_mm = (depth * 1000).astype(np.uint16)
+    depth_path = tmp_path / f"depth_{index:05d}.png"
+    cv2.imwrite(str(depth_path), depth_mm)
+    image_path = tmp_path / f"frame_{index:05d}.jpg"
+    cv2.imwrite(str(image_path), np.zeros((IMG_H, IMG_W, 3), dtype=np.uint8))
+
+    return Frame(
+        image_path=image_path,
+        depth_path=depth_path,
+        pose=_pose_for_yaw(ROOM_CENTER, yaw_deg=0),
+        intrinsics=Intrinsics(fx=FX, fy=FY, cx=CX, cy=CY),
+        source_index=index,
+    )
+
+
+def test_lidar_reconstruction_detects_multiple_openings_on_same_wall(tmp_path):
+    frames = [
+        _make_two_door_frame(tmp_path, 0),
+        _make_wall_frame(tmp_path, 1, yaw_deg=90, with_door=False),
+        _make_wall_frame(tmp_path, 2, yaw_deg=180, with_door=False),
+        _make_wall_frame(tmp_path, 3, yaw_deg=-90, with_door=False),
+    ]
+    capture = Capture(tier=Tier.LIDAR, room_id="test_room", frames=frames)
+    room = reconstruct_room(capture, room_id="r1", name="test_room", device="iPhone17,1")
+
+    assert len(room.openings) == 2
+    assert len({o.wall_id for o in room.openings}) == 1  # both on the same (north) wall
+
+
 def test_lidar_reconstruction_detects_doorway_opening(tmp_path):
     capture = _synthetic_box_room_capture(tmp_path)
     room = reconstruct_room(capture, room_id="r1", name="test_room", device="iPhone17,1")

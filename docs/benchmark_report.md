@@ -5,7 +5,7 @@ Only bedroom_1 has ground truth in a shape (rectangular L x B) this benchmark sc
 | Gate | Status | Metric | Actual | Threshold | Detail |
 |---|---|---|---|---|---|
 | ceiling_height | PASS | absolute error (cm) | 0.930 | 1.500 | predicted=271.07cm, ground_truth=272.00cm |
-| opening_widths | FAIL | fraction within 2.0cm | 0.000 | 0.850 | fail error=41.70cm; miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=150) |
+| opening_widths | FAIL | fraction within 2.0cm | 0.000 | 0.850 | fail error=18.30cm; fail error=3.00cm; fail error=5.30cm; fail error=83.40cm; miss (predicted=45.3, ground_truth=None) |
 | ceiling_repeatability | PASS | spread across captures (cm) | 0.000 | 1.000 | capture_a=240.00cm, capture_b=240.00cm [CAVEAT: photo tier's ceiling height is a fixed default, not measured -- this comparison is vacuous] |
 | repeatability_walls | PASS | worst-wall ratio to threshold (<=1.0 passes) | 0.000 | 1.000 | ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%) [CAVEAT: photo tier's wall lengths are a fixed default, not measured -- this comparison is vacuous] |
 | photo_tier_footprint | PASS | relative footprint error | 0.003 | 0.080 | predicted=12.25m2, ground_truth=12.21m2 [CAVEAT: this is bedroom_1's single-room footprint, a proxy -- the real gate is the whole-property stitched footprint, not yet run against real multi-room captures] |

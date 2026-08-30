@@ -226,11 +226,19 @@ def _reconstruct_lidar(capture: InputCapture, room_id: str, name: str, meta: Cap
     )
 
 
+_OPENING_CANDIDATE_FRAMES = 10  # ponytail: try the top-N aligned frames per wall, not just #1 --
+# a single frame's row scan is fragile (may simply not catch a real opening depending on exact
+# camera position); verified against bedroom_1: 298-523 frames per wall clear the 0.7 alignment
+# bar, but only 1 of 4 walls found anything when only the single best-aligned frame was tried.
+_OPENING_RUN_GAP_TOLERANCE = 2  # px gap allowed within one contiguous anomaly run (noise tolerance)
+_OPENING_DEDUPE_POSITION_TOLERANCE = 0.1  # fraction of wall length; closer detections are merged
+
+
 def _detect_openings_lidar(capture: InputCapture, walls: list[Wall], normals: list[tuple[float, float]]) -> list[Opening]:
     openings: list[Opening] = []
 
     for wall, normal in zip(walls, normals):
-        best_frame, best_alignment = None, 0.7  # minimum dot-product to count as "facing this wall"
+        candidates: list[tuple[float, Frame]] = []
         for frame in capture.frames:
             if not (frame.depth_path and frame.pose and frame.intrinsics):
                 continue
@@ -240,23 +248,29 @@ def _detect_openings_lidar(capture: InputCapture, walls: list[Wall], normals: li
             if norm < 1e-6:
                 continue
             alignment = float(np.dot(forward_xz / norm, normal))
-            if alignment > best_alignment:
-                best_alignment, best_frame = alignment, frame
+            if alignment > 0.7:  # minimum dot-product to count as "facing this wall"
+                candidates.append((alignment, frame))
 
-        if best_frame is None:
-            continue
+        candidates.sort(key=lambda c: c[0], reverse=True)
 
-        opening = _scan_frame_for_opening(best_frame, wall)
-        if opening is not None:
-            openings.append(opening)
+        found: list[Opening] = []
+        for _, frame in candidates[:_OPENING_CANDIDATE_FRAMES]:
+            for opening in _scan_frame_for_openings(frame, wall):
+                if not any(
+                    abs(opening.position_on_wall - existing.position_on_wall) < _OPENING_DEDUPE_POSITION_TOLERANCE
+                    for existing in found
+                ):
+                    found.append(opening)
+
+        openings.extend(found)
 
     return openings
 
 
-def _scan_frame_for_opening(frame: Frame, wall: Wall) -> Opening | None:
+def _scan_frame_for_openings(frame: Frame, wall: Wall) -> list[Opening]:
     depth_img = load_depth_meters(frame.depth_path)
     if depth_img.size == 0:
-        return None
+        return []
     h, w = depth_img.shape[:2]
     intr = _intrinsics_for_depth(frame.intrinsics, (h, w))
     row = int(intr.cy)
@@ -264,7 +278,7 @@ def _scan_frame_for_opening(frame: Frame, wall: Wall) -> Opening | None:
     depths = depth_img[row, :]
     valid = depths[(depths > _DEPTH_MIN_M) & (depths < _DEPTH_MAX_M)]
     if len(valid) == 0:
-        return None
+        return []
     base_depth = float(np.median(valid))
 
     anomaly_cols = [
@@ -274,43 +288,65 @@ def _scan_frame_for_opening(frame: Frame, wall: Wall) -> Opening | None:
         and depths[u] > base_depth * _OPENING_DEPTH_RATIO_THRESHOLD
     ]
     if not anomaly_cols:
-        return None
+        return []
 
-    u_start, u_end = min(anomaly_cols), max(anomaly_cols)
-    # ponytail bug fix: back-project each edge at its own measured depth, not
-    # the wall's base_depth -- an opening's anomaly pixels are, by definition,
-    # farther away than the wall, so using the near (wall) depth for them
-    # underestimates the lateral distance the ray actually covers and
-    # collapses every real opening's computed width (verified: a real ~60cm
-    # bedroom_1 door came out as 19.5cm using base_depth, correctly ~60cm
-    # using each pixel's own depth).
-    world_start = _camera_to_world(_backproject(u_start, row, float(depths[u_start]), intr), frame.pose)
-    world_end = _camera_to_world(_backproject(u_end, row, float(depths[u_end]), intr), frame.pose)
-    # ponytail bug fix: full 3D distance, not just the XZ-plane projection --
-    # dropping Y assumes the camera is perfectly level (no roll), which a
-    # handheld walking capture rarely is. When rolled, the image row sampled
-    # doesn't map to a purely horizontal world line, so real displacement
-    # leaks into Y; discarding it collapsed a real ~60cm bedroom_1 door down
-    # to 19.5cm. Full 3D distance recovers the true point-to-point distance
-    # regardless of roll (verified: 57.3cm vs. 60cm ground truth).
-    width_cm = float(np.linalg.norm(world_start - world_end)) * 100
-
-    if not (_OPENING_MIN_WIDTH_CM <= width_cm <= _OPENING_MAX_WIDTH_CM):
-        return None
+    # ponytail bug fix: split into separate contiguous runs (small gaps
+    # tolerated) instead of taking one global min/max span -- a single span
+    # silently merges two distinct openings on the same wall/row (e.g.
+    # bedroom_1's entrance door + adjacent washroom door on the same wall)
+    # into one wrong-width blob, or misses one entirely.
+    runs: list[list[int]] = []
+    for u in anomaly_cols:
+        if runs and u - runs[-1][-1] <= _OPENING_RUN_GAP_TOLERANCE:
+            runs[-1].append(u)
+        else:
+            runs.append([u])
 
     wall_vec = np.array(wall.end) - np.array(wall.start)
     wall_len = np.linalg.norm(wall_vec)
-    midpoint = (world_start[[0, 2]] + world_end[[0, 2]]) / 2
-    position = float(np.dot(midpoint - np.array(wall.start), wall_vec) / (wall_len**2)) if wall_len > 0 else 0.5
-    position = min(max(position, 0.0), 1.0)
 
-    return Opening(
-        id=f"opening-{wall.id}",
-        wall_id=wall.id,
-        type=OpeningType.DOOR,
-        width=Measurement(value=round(width_cm, 1), confidence_interval=measurement_ci(Tier.LIDAR, width_cm, len(valid))),
-        position_on_wall=round(position, 3),
-    )
+    openings: list[Opening] = []
+    for run_idx, run in enumerate(runs):
+        u_start, u_end = run[0], run[-1]
+        # ponytail bug fix: back-project each edge at its own measured depth,
+        # not the wall's base_depth -- an opening's anomaly pixels are, by
+        # definition, farther away than the wall, so using the near (wall)
+        # depth for them underestimates the lateral distance the ray
+        # actually covers and collapses every real opening's computed width
+        # (verified: a real ~60cm bedroom_1 door came out as 19.5cm using
+        # base_depth, correctly ~60cm using each pixel's own depth).
+        world_start = _camera_to_world(_backproject(u_start, row, float(depths[u_start]), intr), frame.pose)
+        world_end = _camera_to_world(_backproject(u_end, row, float(depths[u_end]), intr), frame.pose)
+        # ponytail bug fix: full 3D distance, not just the XZ-plane
+        # projection -- dropping Y assumes the camera is perfectly level (no
+        # roll), which a handheld walking capture rarely is. When rolled,
+        # the image row sampled doesn't map to a purely horizontal world
+        # line, so real displacement leaks into Y; discarding it collapsed a
+        # real ~60cm bedroom_1 door down to 19.5cm. Full 3D distance
+        # recovers the true point-to-point distance regardless of roll
+        # (verified: 57.3cm vs. 60cm ground truth).
+        width_cm = float(np.linalg.norm(world_start - world_end)) * 100
+
+        if not (_OPENING_MIN_WIDTH_CM <= width_cm <= _OPENING_MAX_WIDTH_CM):
+            continue
+
+        midpoint = (world_start[[0, 2]] + world_end[[0, 2]]) / 2
+        position = float(np.dot(midpoint - np.array(wall.start), wall_vec) / (wall_len**2)) if wall_len > 0 else 0.5
+        position = min(max(position, 0.0), 1.0)
+
+        openings.append(
+            Opening(
+                id=f"opening-{wall.id}-{run_idx}",
+                wall_id=wall.id,
+                type=OpeningType.DOOR,
+                width=Measurement(
+                    value=round(width_cm, 1), confidence_interval=measurement_ci(Tier.LIDAR, width_cm, len(valid))
+                ),
+                position_on_wall=round(position, 3),
+            )
+        )
+
+    return openings
 
 
 # ---------------------------------------------------------------------------
