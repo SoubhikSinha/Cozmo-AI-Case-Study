@@ -16,3 +16,10 @@ media/ground_truth/*
 !media/ground_truth/**/
 !media/ground_truth/**/*.json
 media/sort_log.txt
+
+# Pipeline run output and per-room fix-loop evidence: regenerable from
+# README.md's documented commands against a tester's own captures --
+# never ship pre-baked results, so a fresh clone starts with nothing run.
+output/
+results/fix_loop/before/
+results/fix_loop/after/

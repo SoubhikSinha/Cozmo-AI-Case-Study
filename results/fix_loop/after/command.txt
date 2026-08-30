@@ -1,9 +1,0 @@
-# Identical commands to results/fix_loop/before/command.txt, run after
-# the fix in pipeline/room_reconstruction.py (see results/fix_loop/diff.md).
-
-.venv/bin/python3 -m pipeline.run --tier lidar \
-  --room-dir "media/lidar/bedroom_1/2026_08_29_09_16_57" \
-  --room-id bedroom_1 \
-  --out-dir results/fix_loop/after
-
-.venv/bin/python3 scripts/run_benchmark.py
