@@ -19,7 +19,7 @@
     "metric_description": "fraction within 2.0cm",
     "actual_value": 0.0,
     "threshold": 0.85,
-    "detail": "miss (predicted=None, ground_truth=99); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=150)"
+    "detail": "fail error=41.70cm; miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=150)"
   },
   {
     "tier": "photo",

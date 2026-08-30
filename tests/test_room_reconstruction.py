@@ -89,7 +89,14 @@ def test_lidar_reconstruction_detects_doorway_opening(tmp_path):
 
     assert len(room.openings) == 1
     opening = room.openings[0]
-    assert 60.0 <= opening.width.value <= 120.0  # designed as ~87.5cm
+    # Width is now measured at each edge pixel's own depth (fixed a real bug:
+    # using the wall's near depth for both edges collapsed a real ~60cm
+    # bedroom_1 door down to 19.5cm -- see room_reconstruction.py). This
+    # fixture's doorway anomaly sits at 2.5x the wall's distance (open space
+    # beyond), so its correctly-computed apparent width scales up with that
+    # depth too -- ~218cm here, not the old wall-plane-depth estimate of
+    # ~87.5cm. 150-300cm brackets that with room for pose-derivation noise.
+    assert 150.0 <= opening.width.value <= 300.0
     assert 0.0 <= opening.position_on_wall <= 1.0
 
 

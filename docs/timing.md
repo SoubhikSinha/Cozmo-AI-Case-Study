@@ -4,7 +4,7 @@ Wall-clock time for `reconstruct_room()` only (adapter load / file I/O excluded,
 
 | Run | Seconds |
 |---|---|
-| lidar_reconstruct_bedroom_1 | 4.272 |
+| lidar_reconstruct_bedroom_1 | 3.996 |
 | photo_reconstruct_bedroom_1 | 0.000 |
 | photo_reconstruct_bedroom_1_recapture | 0.000 |
 | video_reconstruct_bedroom_1 | 0.000 |

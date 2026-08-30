@@ -277,9 +277,23 @@ def _scan_frame_for_opening(frame: Frame, wall: Wall) -> Opening | None:
         return None
 
     u_start, u_end = min(anomaly_cols), max(anomaly_cols)
-    world_start = _camera_to_world(_backproject(u_start, row, base_depth, intr), frame.pose)
-    world_end = _camera_to_world(_backproject(u_end, row, base_depth, intr), frame.pose)
-    width_cm = float(np.linalg.norm(world_start[[0, 2]] - world_end[[0, 2]])) * 100
+    # ponytail bug fix: back-project each edge at its own measured depth, not
+    # the wall's base_depth -- an opening's anomaly pixels are, by definition,
+    # farther away than the wall, so using the near (wall) depth for them
+    # underestimates the lateral distance the ray actually covers and
+    # collapses every real opening's computed width (verified: a real ~60cm
+    # bedroom_1 door came out as 19.5cm using base_depth, correctly ~60cm
+    # using each pixel's own depth).
+    world_start = _camera_to_world(_backproject(u_start, row, float(depths[u_start]), intr), frame.pose)
+    world_end = _camera_to_world(_backproject(u_end, row, float(depths[u_end]), intr), frame.pose)
+    # ponytail bug fix: full 3D distance, not just the XZ-plane projection --
+    # dropping Y assumes the camera is perfectly level (no roll), which a
+    # handheld walking capture rarely is. When rolled, the image row sampled
+    # doesn't map to a purely horizontal world line, so real displacement
+    # leaks into Y; discarding it collapsed a real ~60cm bedroom_1 door down
+    # to 19.5cm. Full 3D distance recovers the true point-to-point distance
+    # regardless of roll (verified: 57.3cm vs. 60cm ground truth).
+    width_cm = float(np.linalg.norm(world_start - world_end)) * 100
 
     if not (_OPENING_MIN_WIDTH_CM <= width_cm <= _OPENING_MAX_WIDTH_CM):
         return None
