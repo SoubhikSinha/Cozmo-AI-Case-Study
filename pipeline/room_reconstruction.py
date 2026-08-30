@@ -151,12 +151,21 @@ def _reconstruct_lidar(capture: InputCapture, room_id: str, name: str, meta: Cap
 
     num_points = len(points)
 
-    walls: list[Wall] = []
+    # ponytail bug fix: wall start/end must be in the same unit as
+    # length.value (cm) and as the sparse-tier reconstruction path
+    # (_reconstruct_sparse already builds corners directly in cm). Corners
+    # here come from the point cloud in meters -- opening detection below
+    # needs them in meters (to match world_start/world_end from depth
+    # back-projection), so build the meters-unit walls first for that
+    # internal math, then convert to cm only for the Room's stored Wall
+    # objects. Found via a real render: the plot axis was labeled "cm" but
+    # showed a ~4.5-unit-wide room -- coordinates were meters mislabeled.
+    walls_m: list[Wall] = []
     for i in range(4):
         start = corners[i]
         end = corners[(i + 1) % 4]
         length_cm = wall_lengths_m[i] * 100
-        walls.append(
+        walls_m.append(
             Wall(
                 id=f"wall-{i}",
                 start=start,
@@ -168,7 +177,12 @@ def _reconstruct_lidar(capture: InputCapture, room_id: str, name: str, meta: Cap
             )
         )
 
-    openings = _detect_openings_lidar(capture, walls, normals)
+    openings = _detect_openings_lidar(capture, walls_m, normals)
+
+    walls = [
+        Wall(id=w.id, start=(w.start[0] * 100, w.start[1] * 100), end=(w.end[0] * 100, w.end[1] * 100), length=w.length)
+        for w in walls_m
+    ]
 
     floor_area_m2 = width_x_m * width_z_m
     return Room(
