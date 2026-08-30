@@ -32,11 +32,11 @@ cd Cozmo-AI-Case-Study
 ### A3. Create a virtual environment and install
 ```bash
 python3 -m venv .venv
-.venv/bin/python3 -m pip install -e .
+.venv/bin/python3 -m pip install -e ".[dev]"
 ```
-This installs the `pipeline` package and its two dependencies
-(`opencv-python`, `matplotlib`). No other setup — no Docker, no external
-services, no downloaded model weights.
+This installs the `pipeline` package, its two runtime dependencies
+(`opencv-python`, `matplotlib`), and `pytest` for verification. No other
+setup — no Docker, no external services, no downloaded model weights.
 
 ### A4. Verify the install
 ```bash
