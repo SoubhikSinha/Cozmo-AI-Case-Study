@@ -54,11 +54,12 @@ def main() -> None:
 
         lines.append(f"| {tier} | {device} | {accuracy_lines} | {notes} |")
 
+    room_ids = sorted({r["room_id"] for r in results})
     lines.append("")
     lines.append(
-        "Only `bedroom_1` (the one room with rectangular ground truth) is "
-        "represented here -- see `docs/benchmark_report.md` for why the other "
-        "3 real rooms aren't auto-scored yet."
+        f"Only `{'`, `'.join(room_ids)}` (the room(s) with rectangular ground truth) "
+        "is represented here -- see `docs/benchmark_report.md` for why any other "
+        "real rooms aren't auto-scored."
     )
 
     OUT_PATH.write_text("\n".join(lines) + "\n")
