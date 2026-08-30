@@ -1,0 +1,381 @@
+{
+  "property_id": "bedroom_1",
+  "rooms": [
+    {
+      "id": "bedroom_1",
+      "name": "bedroom_1",
+      "capture": {
+        "tier": "video",
+        "device": "unknown",
+        "room_id": "bedroom_1"
+      },
+      "walls": [
+        {
+          "id": "wall-0",
+          "start": [
+            0.0,
+            0.0
+          ],
+          "end": [
+            500.39735099337753,
+            0.0
+          ],
+          "length": {
+            "value": 500.39735099337753,
+            "confidence_interval": [
+              487.887,
+              512.907
+            ],
+            "unit": "cm"
+          }
+        },
+        {
+          "id": "wall-1",
+          "start": [
+            500.39735099337753,
+            0.0
+          ],
+          "end": [
+            500.39735099337753,
+            500.39735099337753
+          ],
+          "length": {
+            "value": 500.39735099337753,
+            "confidence_interval": [
+              487.887,
+              512.907
+            ],
+            "unit": "cm"
+          }
+        },
+        {
+          "id": "wall-2",
+          "start": [
+            500.39735099337753,
+            500.39735099337753
+          ],
+          "end": [
+            0.0,
+            500.39735099337753
+          ],
+          "length": {
+            "value": 500.39735099337753,
+            "confidence_interval": [
+              487.887,
+              512.907
+            ],
+            "unit": "cm"
+          }
+        },
+        {
+          "id": "wall-3",
+          "start": [
+            0.0,
+            500.39735099337753
+          ],
+          "end": [
+            0.0,
+            0.0
+          ],
+          "length": {
+            "value": 500.39735099337753,
+            "confidence_interval": [
+              487.887,
+              512.907
+            ],
+            "unit": "cm"
+          }
+        }
+      ],
+      "ceiling_height": {
+        "value": 240.0,
+        "confidence_interval": [
+          234.0,
+          246.0
+        ],
+        "unit": "cm"
+      },
+      "floor_area": {
+        "value": 25.04,
+        "confidence_interval": [
+          24.414,
+          25.666
+        ],
+        "unit": "m2"
+      },
+      "openings": [],
+      "damage_regions": [
+        {
+          "id": "damage-7-water-221",
+          "surface_id": "frame-7",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1212.9,
+            "confidence_interval": [
+              970.293,
+              1455.44
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-8-water-291",
+          "surface_id": "frame-8",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1337.0,
+            "confidence_interval": [
+              1069.616,
+              1604.424
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-9-water-243",
+          "surface_id": "frame-9",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1251.4,
+            "confidence_interval": [
+              1001.115,
+              1501.672
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-10-water-273",
+          "surface_id": "frame-10",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1187.2,
+            "confidence_interval": [
+              949.76,
+              1424.64
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-55-water-79",
+          "surface_id": "frame-55",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1259.1,
+            "confidence_interval": [
+              1007.245,
+              1510.867
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-56-water-74",
+          "surface_id": "frame-56",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1367.2,
+            "confidence_interval": [
+              1093.793,
+              1640.689
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-57-water-66",
+          "surface_id": "frame-57",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1336.5,
+            "confidence_interval": [
+              1069.187,
+              1603.781
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-58-water-95",
+          "surface_id": "frame-58",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1176.8,
+            "confidence_interval": [
+              941.401,
+              1412.101
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-59-water-81",
+          "surface_id": "frame-59",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1177.5,
+            "confidence_interval": [
+              942.001,
+              1413.002
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-81-water-295",
+          "surface_id": "frame-81",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1513.0,
+            "confidence_interval": [
+              1210.391,
+              1815.586
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-82-water-172",
+          "surface_id": "frame-82",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1394.0,
+            "confidence_interval": [
+              1115.226,
+              1672.84
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-95-water-572",
+          "surface_id": "frame-95",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1624.9,
+            "confidence_interval": [
+              1299.897,
+              1949.846
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-96-water-579",
+          "surface_id": "frame-96",
+          "damage_class": "water",
+          "severity": "moderate",
+          "extent_area": {
+            "value": 1334.3,
+            "confidence_interval": [
+              1067.43,
+              1601.145
+            ],
+            "unit": "cm2"
+          }
+        },
+        {
+          "id": "damage-99-structural-2144",
+          "surface_id": "frame-99",
+          "damage_class": "structural",
+          "severity": "minor",
+          "extent_area": {
+            "value": 388.5,
+            "confidence_interval": [
+              310.828,
+              466.242
+            ],
+            "unit": "cm2"
+          }
+        }
+      ],
+      "concealed_flags": [],
+      "scope_items": [
+        {
+          "id": "scope-damage-7-water-221",
+          "damage_region_id": "damage-7-water-221",
+          "description": "Remove and dry affected material; treat for water damage on frame-7 (moderate severity, 1213 cm2)"
+        },
+        {
+          "id": "scope-damage-8-water-291",
+          "damage_region_id": "damage-8-water-291",
+          "description": "Remove and dry affected material; treat for water damage on frame-8 (moderate severity, 1337 cm2)"
+        },
+        {
+          "id": "scope-damage-9-water-243",
+          "damage_region_id": "damage-9-water-243",
+          "description": "Remove and dry affected material; treat for water damage on frame-9 (moderate severity, 1251 cm2)"
+        },
+        {
+          "id": "scope-damage-10-water-273",
+          "damage_region_id": "damage-10-water-273",
+          "description": "Remove and dry affected material; treat for water damage on frame-10 (moderate severity, 1187 cm2)"
+        },
+        {
+          "id": "scope-damage-55-water-79",
+          "damage_region_id": "damage-55-water-79",
+          "description": "Remove and dry affected material; treat for water damage on frame-55 (moderate severity, 1259 cm2)"
+        },
+        {
+          "id": "scope-damage-56-water-74",
+          "damage_region_id": "damage-56-water-74",
+          "description": "Remove and dry affected material; treat for water damage on frame-56 (moderate severity, 1367 cm2)"
+        },
+        {
+          "id": "scope-damage-57-water-66",
+          "damage_region_id": "damage-57-water-66",
+          "description": "Remove and dry affected material; treat for water damage on frame-57 (moderate severity, 1336 cm2)"
+        },
+        {
+          "id": "scope-damage-58-water-95",
+          "damage_region_id": "damage-58-water-95",
+          "description": "Remove and dry affected material; treat for water damage on frame-58 (moderate severity, 1177 cm2)"
+        },
+        {
+          "id": "scope-damage-59-water-81",
+          "damage_region_id": "damage-59-water-81",
+          "description": "Remove and dry affected material; treat for water damage on frame-59 (moderate severity, 1178 cm2)"
+        },
+        {
+          "id": "scope-damage-81-water-295",
+          "damage_region_id": "damage-81-water-295",
+          "description": "Remove and dry affected material; treat for water damage on frame-81 (moderate severity, 1513 cm2)"
+        },
+        {
+          "id": "scope-damage-82-water-172",
+          "damage_region_id": "damage-82-water-172",
+          "description": "Remove and dry affected material; treat for water damage on frame-82 (moderate severity, 1394 cm2)"
+        },
+        {
+          "id": "scope-damage-95-water-572",
+          "damage_region_id": "damage-95-water-572",
+          "description": "Remove and dry affected material; treat for water damage on frame-95 (moderate severity, 1625 cm2)"
+        },
+        {
+          "id": "scope-damage-96-water-579",
+          "damage_region_id": "damage-96-water-579",
+          "description": "Remove and dry affected material; treat for water damage on frame-96 (moderate severity, 1334 cm2)"
+        },
+        {
+          "id": "scope-damage-99-structural-2144",
+          "damage_region_id": "damage-99-structural-2144",
+          "description": "Inspect and repair structural crack on frame-99 (minor severity, 388 cm2)"
+        }
+      ]
+    }
+  ],
+  "adjacency": []
+}

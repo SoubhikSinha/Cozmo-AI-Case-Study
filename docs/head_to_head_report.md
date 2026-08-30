@@ -16,12 +16,12 @@ common-space was captured with both our pipeline and magicplan, but is excluded 
 
 | Dimension | Ground Truth (cm) | Our Value | Our Error | Their Value | Their Error | Winner |
 |---|---|---|---|---|---|---|
-| bedroom_1_length | 351.00 | 447.52 | 96.52 | 353.06 | 2.06 | theirs |
-| bedroom_1_breadth | 348.00 | 311.67 | 36.33 | 359.41 | 11.41 | theirs |
-| bedroom_1_ceiling_height | 272.00 | 266.19 | 5.81 | 277.50 | 5.50 | theirs |
+| bedroom_1_length | 351.00 | 389.35 | 38.35 | 353.06 | 2.06 | theirs |
+| bedroom_1_breadth | 348.00 | 283.96 | 64.04 | 359.41 | 11.41 | theirs |
+| bedroom_1_ceiling_height | 272.00 | 271.07 | 0.93 | 277.50 | 5.50 | ours |
 
-**Beat-or-tie rate: 0.0%** of 3 shared dimensions.
+**Beat-or-tie rate: 33.3%** of 3 shared dimensions.
 
 ## Result
 
-**FAIL** -- 0.0% beat-or-tie rate against the assessment's >=70% bar. This traces directly to the two known LiDAR reconstruction issues on record (box-footprint fit, ceiling-height percentile trim) -- see docs/benchmark_report.md and CLAUDE.md -- and is independent evidence for prioritizing them in the Part 4 fix loop.
+**FAIL** -- 33.3% beat-or-tie rate against the assessment's >=70% bar. This traces directly to the two known LiDAR reconstruction issues on record (box-footprint fit, ceiling-height percentile trim) -- see docs/benchmark_report.md and CLAUDE.md -- and is independent evidence for prioritizing them in the Part 4 fix loop.
