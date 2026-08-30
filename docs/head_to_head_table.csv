@@ -1,4 +1,0 @@
-dimension_name,ground_truth,our_value,our_error,their_value,their_error,winner
-bedroom_1_length,351.00,389.35,38.35,353.06,2.06,theirs
-bedroom_1_breadth,348.00,283.96,64.04,359.41,11.41,theirs
-bedroom_1_ceiling_height,272.00,271.07,0.93,277.50,5.50,ours

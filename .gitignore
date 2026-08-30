@@ -23,3 +23,14 @@ media/sort_log.txt
 output/
 results/fix_loop/before/
 results/fix_loop/after/
+
+# Same reasoning: these docs/ files are written by scripts/run_benchmark.py,
+# scripts/generate_device_matrix.py, scripts/run_head_to_head.py directly
+# from media/ + media/ground_truth/ -- regenerate via scripts/reproduce_all.py.
+docs/benchmark_report.md
+docs/benchmark_results.json
+docs/device_matrix.md
+docs/timing.md
+docs/head_to_head_report.md
+docs/head_to_head_table.md
+docs/head_to_head_table.csv
