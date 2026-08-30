@@ -18,7 +18,7 @@ common-space was captured with both our pipeline and magicplan, but is excluded 
 |---|---|---|---|---|---|---|
 | bedroom_1_length | 351.00 | 447.52 | 96.52 | 353.06 | 2.06 | theirs |
 | bedroom_1_breadth | 348.00 | 311.67 | 36.33 | 359.41 | 11.41 | theirs |
-| bedroom_1_ceiling_height | 272.00 | 202.99 | 69.01 | 277.50 | 5.50 | theirs |
+| bedroom_1_ceiling_height | 272.00 | 266.19 | 5.81 | 277.50 | 5.50 | theirs |
 
 **Beat-or-tie rate: 0.0%** of 3 shared dimensions.
 

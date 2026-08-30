@@ -6,6 +6,7 @@ this script prints, and docs/benchmark_report.md).
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 from pipeline.adapters.lidar_adapter import LidarAdapter
@@ -31,21 +32,35 @@ def _sorted_walls_cm(room) -> list[float]:
     return sorted(w.length.value for w in room.walls)
 
 
+def _timed_reconstruct(capture, room_id, timings, label):
+    """Wraps adapter-load + reconstruct_room with a wall-clock timer, so the
+    benchmark report can state real timing per tier (Deliverable #5), not
+    just accuracy. Timing starts once the Capture is already loaded (i.e.
+    measures reconstruction cost, not file-load I/O, which is dominated by
+    disk speed rather than pipeline design)."""
+    t0 = time.perf_counter()
+    room = reconstruct_room(capture, room_id=room_id, name=room_id, device="iPhone17,1")
+    timings[label] = time.perf_counter() - t0
+    return room
+
+
 def main() -> None:
+    timings: dict[str, float] = {}
+
     lidar_dir = next((REPO_ROOT / "media/lidar/bedroom_1").iterdir())
     lidar_capture = LidarAdapter().load(lidar_dir, room_id="bedroom_1")
-    lidar_room = reconstruct_room(lidar_capture, room_id="bedroom_1", name="bedroom_1", device="iPhone17,1")
+    lidar_room = _timed_reconstruct(lidar_capture, "bedroom_1", timings, "lidar_reconstruct_bedroom_1")
 
     photo_capture = PhotoAdapter().load(REPO_ROOT / "media/photos/bedroom_1", room_id="bedroom_1")
-    photo_room = reconstruct_room(photo_capture, room_id="bedroom_1", name="bedroom_1", device="iPhone17,1")
+    photo_room = _timed_reconstruct(photo_capture, "bedroom_1", timings, "photo_reconstruct_bedroom_1")
 
     photo_recapture = PhotoAdapter().load(REPO_ROOT / "media/photos/bedroom_1_recapture", room_id="bedroom_1")
-    photo_recapture_room = reconstruct_room(photo_recapture, room_id="bedroom_1", name="bedroom_1", device="iPhone17,1")
+    photo_recapture_room = _timed_reconstruct(photo_recapture, "bedroom_1", timings, "photo_reconstruct_bedroom_1_recapture")
 
     video_capture = VideoAdapter().load(
         next((REPO_ROOT / "media/video/bedroom_1").glob("*.MOV")), room_id="bedroom_1"
     )
-    video_room = reconstruct_room(video_capture, room_id="bedroom_1", name="bedroom_1", device="iPhone17,1")
+    video_room = _timed_reconstruct(video_capture, "bedroom_1", timings, "video_reconstruct_bedroom_1")
 
     gt_walls = sorted([GROUND_TRUTH["floor_dimensions_cm"]["length"], GROUND_TRUTH["floor_dimensions_cm"]["breadth"]] * 2)
     gt_ceiling = GROUND_TRUTH["ceiling_height_cm"]
@@ -108,6 +123,19 @@ def main() -> None:
     print(f"\nWritten to {out_path}")
 
     results_json_path = REPO_ROOT / "docs" / "benchmark_results.json"
+    timing_path = REPO_ROOT / "docs" / "timing.md"
+    timing_lines = [
+        "# Reconstruction Timing (bedroom_1, on this machine)",
+        "",
+        "Wall-clock time for `reconstruct_room()` only (adapter load / file I/O excluded, since that's disk-speed-bound, not pipeline design). Measured via `time.perf_counter()` in `scripts/run_benchmark.py`, regenerated every run -- not a one-off manual measurement.",
+        "",
+        "| Run | Seconds |",
+        "|---|---|",
+    ]
+    timing_lines += [f"| {label} | {seconds:.3f} |" for label, seconds in timings.items()]
+    timing_path.write_text("\n".join(timing_lines) + "\n")
+    print(f"Written to {timing_path}")
+
     results_json_path.write_text(
         json.dumps(
             [
