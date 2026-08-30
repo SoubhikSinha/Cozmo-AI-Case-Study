@@ -40,7 +40,7 @@ def main() -> None:
         print(f"  [{exists}] {path}")
 
     print("\nAll reported numbers regenerated live from media/ + media/ground_truth/.")
-    print("Run `pytest tests/ -q` separately to confirm the 77 unit/integration tests.")
+    print("Run `pytest tests/ -q` separately to confirm the full unit/integration test suite.")
 
 
 if __name__ == "__main__":

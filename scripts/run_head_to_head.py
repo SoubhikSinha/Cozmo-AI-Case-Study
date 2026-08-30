@@ -1,12 +1,10 @@
 """Builds the real Part 3 head-to-head comparison: our LiDAR-tier output vs.
-magicplan vs. ground truth, on bedroom_1 and common-space.
-
-Shared dimensions only: a dimension is compared only when both our output
-and the competitor's parsed export have a value for it. Only bedroom_1
-qualifies -- common-space's ground truth is an irregular room (see
-media/ground_truth/common-space/ground_truth.json) with no single L x B /
-single-ceiling-height representation to compare magicplan's box-shaped
-measurement against, so it's excluded here rather than force-matched.
+the named competitor vs. ground truth. Rooms are discovered dynamically --
+never hardcoded -- from whichever rooms have both rectangular ground truth
+(media/ground_truth/<room>/ground_truth.json with a "floor_dimensions_cm"
+key) and a matching entry in the competitor's measurements.json, so this
+runs unchanged against a tester's own capture and their own competitor
+export.
 """
 from __future__ import annotations
 
@@ -18,19 +16,16 @@ from pipeline.competitor_parser import load_competitor_measurements
 from pipeline.head_to_head import HeadToHeadReport, build_report
 from pipeline.room_reconstruction import reconstruct_room
 
+from _room_discovery import all_ground_truth_rooms
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# The only two facts this script can't discover from media/ itself: which
+# competitor app was used, and its version -- both come from the human who
+# ran the competitor's capture, not from any file structure.
 COMPETITOR_APP = "magicplan"
 COMPETITOR_VERSION = "2026.34.1"
-ROOMS_TESTED = ["bedroom_1", "common-space"]
-ROOMS_SCORED = ["bedroom_1"]
-EXCLUDED_ROOM_NOTE = (
-    "common-space was captured with both our pipeline and magicplan, but is excluded from "
-    "scoring: its ground truth is an irregular room (see "
-    "media/ground_truth/common-space/ground_truth.json -- a per-wall perimeter, not a single "
-    "L x B box), so there is no single width/length/ceiling-height ground-truth value to "
-    "compare magicplan's box-shaped measurement against without inventing a mapping."
-)
+COMPETITOR_MEASUREMENTS = REPO_ROOT / "media/competitor_benchmark/magicplan/measurements.json"
 
 
 def _sorted_walls_cm(room) -> list[float]:
@@ -42,36 +37,53 @@ def build_real_head_to_head_report() -> tuple[HeadToHeadReport, dict]:
     narrative metadata, so every output document (table CSV/markdown, the
     written-up report) is generated from this one source -- numbers can't
     drift between documents."""
-    ground_truth = json.loads((REPO_ROOT / "media/ground_truth/bedroom_1/ground_truth.json").read_text())
-    competitor = load_competitor_measurements(REPO_ROOT / "media/competitor_benchmark/magicplan/measurements.json")
+    competitor = load_competitor_measurements(COMPETITOR_MEASUREMENTS)
+    all_rooms = all_ground_truth_rooms(REPO_ROOT)
 
-    lidar_dir = next((REPO_ROOT / "media/lidar/bedroom_1").iterdir())
-    lidar_capture = LidarAdapter().load(lidar_dir, room_id="bedroom_1")
-    our_room = reconstruct_room(lidar_capture, room_id="bedroom_1", name="bedroom_1", device="iPhone17,1")
+    rooms_tested = [room_id for room_id, _ in all_rooms if room_id in competitor]
+    rooms_scored = [room_id for room_id, gt in all_rooms if room_id in competitor and "floor_dimensions_cm" in gt]
+    excluded_rooms = sorted(set(rooms_tested) - set(rooms_scored))
 
-    gt_length = ground_truth["floor_dimensions_cm"]["length"]
-    gt_breadth = ground_truth["floor_dimensions_cm"]["breadth"]
-    gt_ceiling = ground_truth["ceiling_height_cm"]
+    dimensions = []
+    for room_id, ground_truth in all_rooms:
+        if room_id not in rooms_scored:
+            continue
 
-    our_walls_sorted = _sorted_walls_cm(our_room)  # [short, short, long, long]
-    our_breadth, our_length = our_walls_sorted[0], our_walls_sorted[-1]
+        lidar_dir = next((REPO_ROOT / "media/lidar" / room_id).iterdir())
+        lidar_capture = LidarAdapter().load(lidar_dir, room_id=room_id)
+        our_room = reconstruct_room(lidar_capture, room_id=room_id, name=room_id, device="iPhone17,1")
 
-    their = competitor["bedroom_1"]
-    their_length, their_breadth = their.length.value, their.width.value
+        gt_length = ground_truth["floor_dimensions_cm"]["length"]
+        gt_breadth = ground_truth["floor_dimensions_cm"]["breadth"]
+        gt_ceiling = ground_truth["ceiling_height_cm"]
 
-    dimensions = [
-        ("bedroom_1_length", gt_length, our_length, their_length),
-        ("bedroom_1_breadth", gt_breadth, our_breadth, their_breadth),
-        ("bedroom_1_ceiling_height", gt_ceiling, our_room.ceiling_height.value, their.ceiling_height.value),
-    ]
+        our_walls_sorted = _sorted_walls_cm(our_room)  # [short, short, long, long]
+        our_breadth, our_length = our_walls_sorted[0], our_walls_sorted[-1]
+
+        their = competitor[room_id]
+        dimensions.extend(
+            [
+                (f"{room_id}_length", gt_length, our_length, their.length.value),
+                (f"{room_id}_breadth", gt_breadth, our_breadth, their.width.value),
+                (f"{room_id}_ceiling_height", gt_ceiling, our_room.ceiling_height.value, their.ceiling_height.value),
+            ]
+        )
 
     report = build_report(dimensions)
+    excluded_note = (
+        f"{', '.join(excluded_rooms)} captured with both our pipeline and {COMPETITOR_APP}, but excluded from "
+        "scoring: ground truth is an irregular room (a per-wall perimeter, not a single L x B box), so there "
+        "is no single width/length/ceiling-height ground-truth value to compare the competitor's box-shaped "
+        "measurement against without inventing a mapping."
+        if excluded_rooms
+        else "No rooms excluded -- every room tested against the competitor had comparable rectangular ground truth."
+    )
     metadata = {
         "competitor_app": COMPETITOR_APP,
         "competitor_version": COMPETITOR_VERSION,
-        "rooms_tested": ROOMS_TESTED,
-        "rooms_scored": ROOMS_SCORED,
-        "excluded_room_note": EXCLUDED_ROOM_NOTE,
+        "rooms_tested": rooms_tested,
+        "rooms_scored": rooms_scored,
+        "excluded_room_note": excluded_note,
         "device": "iPhone17,1",
     }
     return report, metadata
@@ -85,12 +97,13 @@ def main() -> None:
     csv_path = REPO_ROOT / "docs" / "head_to_head_table.csv"
     csv_path.write_text(report.to_csv())
 
+    scored_note = ", ".join(metadata["rooms_scored"]) or "(none)"
     md_path = REPO_ROOT / "docs" / "head_to_head_table.md"
     md_path.write_text(
         f"# Head-to-Head: Our Pipeline vs. {metadata['competitor_app']} ({metadata['competitor_version']})\n\n"
-        "LiDAR tier, bedroom_1 (the only benchmark room with ground truth in a shape "
-        "comparable to both our box-room reconstruction and magicplan's box-room output -- "
-        "see docs/head_to_head.md for why common-space is excluded).\n\n"
+        f"LiDAR tier, {scored_note} (only rooms with ground truth in a shape comparable to both our "
+        f"box-room reconstruction and {metadata['competitor_app']}'s box-room output -- see "
+        "docs/head_to_head.md for why other rooms may be excluded).\n\n"
         + report.to_markdown()
         + "\n"
     )
@@ -111,8 +124,8 @@ def _render_report_md(report: HeadToHeadReport, metadata: dict) -> str:
         "comes directly from `pipeline.head_to_head.HeadToHeadReport`, not retyped by hand.\n\n"
         f"**Competitor app:** {metadata['competitor_app']}, version {metadata['competitor_version']} (free tier)\n\n"
         f"**Device:** {metadata['device']}\n\n"
-        f"**Rooms tested:** {', '.join(metadata['rooms_tested'])}\n\n"
-        f"**Rooms scored:** {', '.join(metadata['rooms_scored'])}\n\n"
+        f"**Rooms tested:** {', '.join(metadata['rooms_tested']) or '(none)'}\n\n"
+        f"**Rooms scored:** {', '.join(metadata['rooms_scored']) or '(none)'}\n\n"
         f"{metadata['excluded_room_note']}\n\n"
         "## Comparison table\n\n"
         f"{report.to_markdown()}\n\n"
