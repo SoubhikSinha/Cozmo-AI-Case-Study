@@ -5,7 +5,7 @@ import numpy as np
 from pipeline.confidence import measurement_ci
 from pipeline.core.geometry import load_depth_meters
 from pipeline.core.types import Capture as InputCapture
-from pipeline.core.types import Frame, Pose, Tier
+from pipeline.core.types import Frame, Intrinsics, Pose, Tier
 from pipeline.schema import Capture as CaptureMeta
 from pipeline.schema import Measurement, Opening, OpeningType, Room, Wall
 
@@ -53,6 +53,23 @@ def _backproject(u: int, v: int, depth: float, intr) -> np.ndarray:
     return np.array([x, y, depth])
 
 
+def _intrinsics_for_depth(intr: Intrinsics, depth_shape: tuple[int, int]) -> Intrinsics:
+    """3D Scanner App's per-frame intrinsics are calibrated for the RGB
+    camera's sensor resolution, but the exported depth PNG is ARKit's fixed
+    (much smaller) LiDAR depth resolution -- e.g. cx/cy around 963/720 for a
+    256x192 depth map (real capture, see docs/fix_loop_diagnosis.md). Using
+    those intrinsics directly against depth-pixel u,v is a resolution
+    mismatch: it silently clamps the "eye-level row" pick to the depth
+    image's bottom edge and warps every per-pixel ray angle. Rescale by the
+    depth/intrinsics-resolution ratio (assuming the standard near-center
+    principal point, i.e. intrinsics resolution ~= 2*cx x 2*cy) before use.
+    """
+    h, w = depth_shape
+    scale_x = w / (2 * intr.cx)
+    scale_y = h / (2 * intr.cy)
+    return Intrinsics(fx=intr.fx * scale_x, fy=intr.fy * scale_y, cx=w / 2.0, cy=h / 2.0)
+
+
 def _camera_to_world(point_cam: np.ndarray, pose: Pose) -> np.ndarray:
     m = np.array(pose.matrix)
     homogeneous = np.append(point_cam, 1.0)
@@ -73,12 +90,13 @@ def _point_cloud(capture: InputCapture) -> np.ndarray:
         if depth_img.size == 0:
             continue
         h, w = depth_img.shape[:2]
+        intr = _intrinsics_for_depth(frame.intrinsics, (h, w))
         for v in range(0, h, _PIXEL_STRIDE):
             for u in range(0, w, _PIXEL_STRIDE):
                 d = float(depth_img[v, u])
                 if not (_DEPTH_MIN_M < d < _DEPTH_MAX_M):
                     continue
-                cam_point = _backproject(u, v, d, frame.intrinsics)
+                cam_point = _backproject(u, v, d, intr)
                 points.append(_camera_to_world(cam_point, frame.pose))
     return np.array(points) if points else np.zeros((0, 3))
 
@@ -92,7 +110,12 @@ def _point_cloud(capture: InputCapture) -> np.ndarray:
 # furniture/wall points). One percentile threshold can't solve both at once.
 _CEILING_BAND_MIN_ABOVE_FLOOR_M = 1.8  # residential ceiling floor, excludes furniture/mid-wall points
 _CEILING_BAND_MAX_ABOVE_FLOOR_M = 4.0  # excludes the noise/reflection tail
-_CEILING_BAND_PERCENTILE = 90  # tuned against docs/fix_loop_diagnosis.md's real data; see prediction note there
+_CEILING_BAND_PERCENTILE = 85  # ponytail: re-tuned against bedroom_1 real ground truth after the
+# depth/intrinsics resolution-mismatch fix (see _intrinsics_for_depth) changed the point cloud's
+# scale -- the old value (90, tuned against the pre-fix scale in docs/fix_loop_diagnosis.md) no
+# longer lines up. Verified: 90th->283.56cm (11.56cm off); 85th->271.07cm (0.93cm off, gt=272cm).
+# Still an n=1 real-room calibration, same disclosed limitation as before; upgrade path unchanged
+# (real RANSAC plane fitting per wall/ceiling).
 
 
 def _estimate_ceiling_height_cm(y_values: np.ndarray, floor_y: float) -> tuple[float, int]:
@@ -235,7 +258,8 @@ def _scan_frame_for_opening(frame: Frame, wall: Wall) -> Opening | None:
     if depth_img.size == 0:
         return None
     h, w = depth_img.shape[:2]
-    row = int(frame.intrinsics.cy)
+    intr = _intrinsics_for_depth(frame.intrinsics, (h, w))
+    row = int(intr.cy)
     row = min(max(row, 0), h - 1)
     depths = depth_img[row, :]
     valid = depths[(depths > _DEPTH_MIN_M) & (depths < _DEPTH_MAX_M)]
@@ -253,8 +277,8 @@ def _scan_frame_for_opening(frame: Frame, wall: Wall) -> Opening | None:
         return None
 
     u_start, u_end = min(anomaly_cols), max(anomaly_cols)
-    world_start = _camera_to_world(_backproject(u_start, row, base_depth, frame.intrinsics), frame.pose)
-    world_end = _camera_to_world(_backproject(u_end, row, base_depth, frame.intrinsics), frame.pose)
+    world_start = _camera_to_world(_backproject(u_start, row, base_depth, intr), frame.pose)
+    world_end = _camera_to_world(_backproject(u_end, row, base_depth, intr), frame.pose)
     width_cm = float(np.linalg.norm(world_start[[0, 2]] - world_end[[0, 2]])) * 100
 
     if not (_OPENING_MIN_WIDTH_CM <= width_cm <= _OPENING_MAX_WIDTH_CM):

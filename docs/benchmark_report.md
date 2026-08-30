@@ -4,7 +4,7 @@ Only bedroom_1 has ground truth in a shape (rectangular L x B) this benchmark sc
 
 | Gate | Status | Metric | Actual | Threshold | Detail |
 |---|---|---|---|---|---|
-| ceiling_height | FAIL | absolute error (cm) | 5.810 | 1.500 | predicted=266.19cm, ground_truth=272.00cm |
+| ceiling_height | PASS | absolute error (cm) | 0.930 | 1.500 | predicted=271.07cm, ground_truth=272.00cm |
 | opening_widths | FAIL | fraction within 2.0cm | 0.000 | 0.850 | miss (predicted=None, ground_truth=99); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=60); miss (predicted=None, ground_truth=150) |
 | ceiling_repeatability | PASS | spread across captures (cm) | 0.000 | 1.000 | capture_a=240.00cm, capture_b=240.00cm [CAVEAT: photo tier's ceiling height is a fixed default, not measured -- this comparison is vacuous] |
 | repeatability_walls | PASS | worst-wall ratio to threshold (<=1.0 passes) | 0.000 | 1.000 | ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%); ok diff=0.00cm (0.00%) [CAVEAT: photo tier's wall lengths are a fixed default, not measured -- this comparison is vacuous] |
